@@ -4,6 +4,7 @@
 import gym
 import numpy as np 
 import time
+import random 
 
 def run_solution_policy(env, Q):
 	# Q is the solution policy
@@ -15,8 +16,8 @@ def run_solution_policy(env, Q):
 
 	for j in range(steps_per_ep):
 		env.render()
-		time.sleep(0.05)
-		a = np.argmax(Q[s,:])
+		time.sleep(0.01)
+		a = np.argmax(Q[s,:])  
 		new_s, reward, done, info = env.step(a)
 
 		r_epis += reward 
@@ -49,6 +50,7 @@ Q = np.random.rand(env.observation_space.n, env.action_space.n)
 alpha = 0.128 # learning rate
 gamma = 1  # discount rate
 epis = 1000
+eps = 0.99
 steps_per_ep = 500
 
 total_r = [] # list of rewards over the episodes
@@ -62,7 +64,19 @@ for i in range(epis):
 	r_epis = 0 # Reward for the episode
 	for j in range(steps_per_ep):
 		# action to take at that step (index of the max value in the row of s)
-		a = np.argmax(Q[s,:]) 
+		
+		val = abs(np.random.random())
+
+		# Only Exploitation
+		# a = np.argmax(Q[s,:])
+
+		# Exploration and Exploitation
+		if abs(val) <= eps:
+			# Exploit 
+			a = np.argmax(Q[s,:])
+		else:
+			# Exploration
+			a = random.randint(0, env.action_space.n-1)
 
 		# perform the action
 		new_s, reward, done, info = env.step(a)
