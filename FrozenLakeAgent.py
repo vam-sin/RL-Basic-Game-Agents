@@ -1,57 +1,53 @@
-'''
-Q Learning
-
-A model free learning technique that can be used to find the optimal action-selection policy using the Q function.
-
-Q [number of states, number of actions] (Matrix, called the Q Table data structure, telling the best possible action at each state)
- 
-We learn a function Q that basically tells us how to act in each state.
-
-Process:
-
-1. Initialize Q randomly
-2. Choose option from Q
-3. Perform that action
-4. Measure the reward of that action
-5. Update the estimate of Q it originally had in the Q Table 
-6. Go to step 2
-
-But this makes the algorithm greedy, the agent once it receives a lesser reward, wont ever choose that
-choice again. Makes it less exploratory, it will always choose according the optimal policy that it currenty has.
-
-To make it exploratory, we make sure that at a certain probability, it chooses a random action, so that the agent
-can explore all the possible rewards in the space.
-
-Steps:
-
-Bellman Equation:
-New_Q[s, a] = curr_Q[s, a] + alpha * [R[s, a] + (gamma * max(new_Q[s', a']) - curr_Q[s, a]]
-
-R[s, a]: Reward for taking action a at state s
-1. Make an environment
-2. Initialize Q randomly
-3. Choose hyperparameters 
-	alpha: learning rate
-	gamma: discount rate
-4. Loop through episode
-
-
-'''
-
 # Q Learning agent for Hill Climbing
+# Iteration 1: Only Exploitation, No Exploration.
 
 import gym
 import numpy as np 
+import time
+
+def run_solution_policy(env, Q):
+	# Q is the solution policy
+	steps_per_ep = 500
+	render_time = 10
+	d = False
+	s = env.reset()
+	r_epis = 0.0
+
+	for j in range(steps_per_ep):
+		env.render()
+		time.sleep(0.05)
+		a = np.argmax(Q[s,:])
+		new_s, reward, done, info = env.step(a)
+
+		r_epis += reward 
+
+		s = new_s
+
+		if done and reward == 0:
+			for j in range(render_time):
+				env.render()
+			print(done)
+			print("HOLE/ICE")
+			return 
+		elif done and reward == 1:
+			env.render()
+			print("GOAL")
+			return 
+
+	print("Not Done")
+	env.render()
 
 # make the env
 env = gym.make('FrozenLake8x8-v0') 
+env.seed(42)
+np.random.seed(42)
 
 # init Q
 Q = np.random.rand(env.observation_space.n, env.action_space.n)
 
 # hyperparam
-alpha = 0.9 # learning rate
-gamma = 0.90  # discount rate
+alpha = 0.128 # learning rate
+gamma = 1  # discount rate
 epis = 1000
 steps_per_ep = 500
 
@@ -62,6 +58,7 @@ for i in range(epis):
 
 	d = False # boolean to check if the task is done
 	s = env.reset() # start state
+	# holes = 0
 	r_epis = 0 # Reward for the episode
 	for j in range(steps_per_ep):
 		# action to take at that step (index of the max value in the row of s)
@@ -69,17 +66,36 @@ for i in range(epis):
 
 		# perform the action
 		new_s, reward, done, info = env.step(a)
+		# print(j, reward)
+
+		if reward == 0.0 and done == True: # F
+			# print("HOLE")
+			new_r = -100
+		elif reward == 0.0 and done == False: # F
+			# print("ICE")
+			new_r = 0
+		elif reward == 1.0:
+			# print("GOAL")
+			new_r = 100
+
+		r_epis += new_r
 
 		# update Q Table
-		Q[s, a] = Q[s, a] + alpha * (reward + (gamma * np.max(Q[new_s,:])) - Q[s, a])
-		r_epis += reward
+		Q[s, a] = Q[s, a] + alpha * (new_r + (gamma * np.max(Q[new_s,:])) - Q[s, a])
 
-		if done:
+		s = new_s
+
+		if done == True and reward == 1: # Hole
+			print("GOAL BREAK")
+			break
+		elif done and reward == 0: # Goal
+			print("HOLE BREAK")
 			break
 
 	total_r.append(r_epis)
-	env.render()
+	# env.render()
 
+run_solution_policy(env, Q)
 print("Total Average Reward: ", np.sum(total_r)/epis)
 env.close()
 
