@@ -44,7 +44,7 @@ env.seed(42)
 np.random.seed(42)
 
 # init Q
-Q = np.random.rand(env.observation_space.n, env.action_space.n)
+Q = np.zeros([env.observation_space.n, env.action_space.n])
 
 # hyperparam
 alpha = 0.128 # learning rate
@@ -65,7 +65,7 @@ for i in range(epis):
 	for j in range(steps_per_ep):
 		# action to take at that step (index of the max value in the row of s)
 		
-		val = abs(np.random.random())
+		val = abs(np.random.uniform(0, 1))
 
 		# Only Exploitation
 		# a = np.argmax(Q[s,:])
