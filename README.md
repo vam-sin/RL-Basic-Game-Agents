@@ -1,4 +1,4 @@
-# RL-Basic-Game-Agents
+# RL-Game-Agents
 Basic Reinforcement Learning based Game Agents which make use of Q-Learning
 
 The agents are built using the OpenAi Gym library. Making use of Q-Learning the agent learns to navigate through the environemnt.
